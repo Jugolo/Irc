@@ -29,8 +29,14 @@ namespace Irc.Irc
             this.pushFunction(new FunctionNativeInstance("nick", Nick));
             this.pushFunction(new FunctionNativeInstance("rawMessage", RawMessage));
             this.pushFunction(new FunctionNativeInstance("myNick", MyNick));
+            this.pushFunction(new FunctionNativeInstance("isPM", IsPM));
 
             energy.Parse(new InputTextReader(File.OpenText("script.txt")));
+        }
+
+        private Value IsPM(Value[] args)
+        {
+            return new BoolValue(args[0].toString().IndexOf("#") != 0);
         }
 
         private Value _Action(Value[] args)

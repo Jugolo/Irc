@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using Irc.Database;
 using Irc.Forms;
 using Irc.Irc;
+using torrent.Script.Values;
 
 namespace Irc
 {
@@ -313,6 +314,15 @@ namespace Irc
                 identify,
                 channel
             });
+
+            IrcConection connection = this.GetConnection(identify);
+            if (connection.scriptAction.ContainsKey("channel.open"))
+            {
+                connection.scriptAction["channel.open"].Call(new Value[]
+                {
+                    new StringValue(channel)
+                });
+            }
         }
 
         private void AppendChannelNode(string identify, string channel)
