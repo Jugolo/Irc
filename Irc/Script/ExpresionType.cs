@@ -1,0 +1,31 @@
+﻿namespace torrent.Script
+{
+    public enum ExpresionType
+    {
+        Identify,
+        Call,
+        String,
+        Assign,
+        Not,
+        Bool,
+        Equel,
+        NotEqual,
+        Plus,
+        Minus,
+        Negetiv,
+        Posetiv,
+        Number,
+        Empty,
+        NamedArray,
+        ArrayGet,
+        LEFT_ARROW,
+        RIGHT_ARROW,
+        CREATOR,
+        LOWER,
+        AND,
+        Array,
+        SelfPlus,
+        SelfMinus,
+        Function,
+    }
+}
