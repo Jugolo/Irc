@@ -27,6 +27,7 @@ namespace Irc.Irc
             this.pushFunction(new FunctionNativeInstance("privmsg", Privmsg));
             this.pushFunction(new FunctionNativeInstance("channel", Channel));
             this.pushFunction(new FunctionNativeInstance("nick", Nick));
+            this.pushFunction(new FunctionNativeInstance("msg", Msg));
             this.pushFunction(new FunctionNativeInstance("rawMessage", RawMessage));
             this.pushFunction(new FunctionNativeInstance("myNick", MyNick));
             this.pushFunction(new FunctionNativeInstance("isPM", IsPM));
@@ -76,6 +77,11 @@ namespace Irc.Irc
         {
             IrcScriptMessage msg = this.EnsureScriptMessage(args[0]);
             return new StringValue(IrcUntil.GetChannel(msg.message));
+        }
+
+        private Value Msg(Value[] args)
+        {
+            return new StringValue(this.EnsureScriptMessage(args[0]).message.ParamsTrailing);
         }
 
         private Value Nick(Value[] args)

@@ -64,6 +64,10 @@ namespace torrent.Script.Libary
                     return new FunctionValue(new FunctionNativeInstance("@System.Array.Length", LibaryString.Length));
                 case "System.String.CharArray":
                     return new FunctionValue(new FunctionNativeInstance("@System.String.CharArray", LibaryString.CharArray));
+                case "System.String.Strpos":
+                    return new FunctionValue(new FunctionNativeInstance("@System.String.Strpos", LibaryString.Strpos));
+                case "System.String.Substr":
+                    return new FunctionValue(new FunctionNativeInstance("@System.String.Substr", LibaryString.Substr));
                 default:
                     throw new ScriptRuntimeException("Unknown system libary detected: " + arg);
             }

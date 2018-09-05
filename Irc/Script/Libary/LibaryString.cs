@@ -18,5 +18,15 @@ namespace torrent.Script.Libary
                 result.Add(new StringValue(c[i].ToString()));
             return new ArrayValue(result);
         }
+
+        public static Value Strpos(Value[] args)
+        {
+            return new NumberValue(args[0].toString().IndexOf(args[1].toString()));
+        }
+
+        public static Value Substr(Value[] args)
+        {
+            return new StringValue(args[0].toString().Substring((int)args[1].ToNumber()));
+        }
     }
 }

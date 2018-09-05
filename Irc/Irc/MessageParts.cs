@@ -13,7 +13,7 @@ namespace Irc.Irc
         public MessageParts(string from, string message)
         {
             DateTime time = DateTime.Now;
-            string text = "[" + time.Hour + ":" + time.Minute + "]";
+            string text = "[" + this.ConvertTime(time.Hour) + ":" + this.ConvertTime(time.Minute) + "]";
             if(from != null)
             {
                 text += " " + from + ": ";
@@ -89,6 +89,13 @@ namespace Irc.Irc
             }
 
             return part;
+        }
+
+        private string ConvertTime(int time)
+        {
+            if (time < 10)
+                return "0" + time;
+            return time.ToString();
         }
     }
 }

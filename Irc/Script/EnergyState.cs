@@ -275,6 +275,8 @@ namespace torrent.Script
                     }
                 case ExpresionType.LEFT_ARROW:
                     return new BoolValue(EvulateExpresion(expresion.Left).ToNumber() < EvulateExpresion(expresion.Right).ToNumber());
+                case ExpresionType.RIGHT_ARROW:
+                    return new BoolValue(EvulateExpresion(expresion.Left).ToNumber() > EvulateExpresion(expresion.Right).ToNumber());
                 case ExpresionType.SelfPlus:
                     r = EvulateExpresion(expresion.Left).ToRefrence();
                     r.Put(new NumberValue(r.Get().ToNumber() + EvulateExpresion(expresion.Right).ToNumber()));
