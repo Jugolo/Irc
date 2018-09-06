@@ -17,6 +17,7 @@ namespace Irc.Forms
         private string Identify = "";
         private string Channel = "";
         private delegate void RP();
+        private delegate void SM(int line);
         private int StartLine = 0;//start at line 0
 
         public Message()
@@ -29,9 +30,7 @@ namespace Irc.Forms
 
         private void Message_Load(object sender, EventArgs e)
         {
-
-            vScrollBar1.Maximum = 0;
-            vScrollBar1.Minimum = 0;
+            
         }
 
         public string GetSelectedIdentify()
@@ -165,6 +164,7 @@ namespace Irc.Forms
 
         private void ChangeLines(bool resize) { 
             List<MessageParts> parts = this.GetMessageParts();
+            Graphics g = this.CreateGraphics();
             if(parts == null)
             {
                 return;
@@ -174,10 +174,20 @@ namespace Irc.Forms
             for(int i = 0; i < parts.Count; i++)
             {
                 if (resize)
-                    parts[i].OnResize();
+                    parts[i].OnResize(this.ClientSize.Width - this.vScrollBar1.Width, g);
                 line += parts[i].Lines;
             }
             this.RePaint();
+            this.SetScroolMax(line);
+        }
+
+        private void SetScroolMax(int lines)
+        {
+            this.vScrollBar1.BeginInvoke(new SM(DoSetScroolMax), new object[] { lines });
+        }
+
+        private void DoSetScroolMax(int line)
+        {
             vScrollBar1.Maximum = line;
         }
 

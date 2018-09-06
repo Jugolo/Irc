@@ -28,9 +28,9 @@ namespace Irc.Irc
             this.Message.Draw(g, size, width);
         }
 
-        public void OnResize()
+        public void OnResize(int nw, Graphics g)
         {
-
+            this.Lines = this.Message.CalculateLine(nw, g)[1];
         }
 
         private TextPart InitMessage(char[] text)

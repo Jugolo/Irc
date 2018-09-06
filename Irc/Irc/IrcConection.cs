@@ -20,9 +20,10 @@ namespace Irc.Irc
         public Dictionary<string, FunctionInstance> scriptEvenets = new Dictionary<string, FunctionInstance>();
         public Dictionary<string, FunctionInstance> scriptAction = new Dictionary<string, FunctionInstance>();
         private string[] Channels { get; set; }
+        public string Host { get; private set; }
+        public int Port { get; private set; }
         private IrcScript script;
         private string nick;
-        private string[] channels;
         private string identify;
         private Form1 Main;
         
@@ -30,19 +31,51 @@ namespace Irc.Irc
 
         public IrcConection(Form1 main, string identify, string host, int port, string nick, string[] channels)
         {
+            this.Host = host;
+            this.Port = port;
             this.Main = main;
-            this.Status = ConnectionStatus.Startet;
             this.nick = nick;
-            this.channels = channels;
             this.identify = identify;
-            this.client = new TcpClient(host, port);
-            this.writer = new StreamWriter(this.client.GetStream());
-            this.reader = new StreamReader(this.client.GetStream());
             this.Channels = channels;
-            this.script = new IrcScript(this, main);
+            this.Status = ConnectionStatus.Paused;
+        }
 
-            Thread thread = new Thread(Open);
+        public void Connect() {
+            Thread thread = new Thread(DoConnect);
             thread.Start();
+        }
+
+        private void DoConnect() { 
+            if (this.Status == ConnectionStatus.Startet)
+                return;
+
+            int i = 0;
+            for (; i <= 10; i++)
+            {
+                try
+                {
+                    this.client = new TcpClient(this.Host, this.Port);
+                    this.writer = new StreamWriter(this.client.GetStream());
+                    this.reader = new StreamReader(this.client.GetStream());
+                    break;
+                }catch(IOException e)
+                {
+                    this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect: "+e.Message);
+                }catch(SocketException e)
+                {
+                    this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect: " + e.Message);
+                }
+                Thread.Sleep(5000);
+            }
+            if(i == 10)
+            {
+                this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect to the server.");
+                return;
+            }
+            this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"3,0Is now connected");
+            this.Status = ConnectionStatus.Startet;
+            this.script = new IrcScript(this, this.Main);
+            this.Open();
         }
 
         public string GetNick()
@@ -76,7 +109,7 @@ namespace Irc.Irc
             this.reader.Dispose();
         }
 
-        public void Start() { 
+        private void Start() { 
 
             string line;
             try
@@ -119,6 +152,9 @@ namespace Irc.Irc
 
         public void Close()
         {
+            if (this.Status != ConnectionStatus.Startet)
+                return;
+
             this.SendLine("QUIT :");
             this.Flush();
             if(this.writer != null)

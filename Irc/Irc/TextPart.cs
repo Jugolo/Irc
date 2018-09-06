@@ -35,6 +35,31 @@ namespace Irc.Irc
             return tp;
         }
 
+        internal int[] CalculateLine(int nw, Graphics g)
+        {
+            int[] lines = new int[] { 0, 1 };
+            if(this.Last != null)
+            {
+                lines = this.Last.CalculateLine(nw, g);
+            }
+
+            SizeF size = new SizeF();
+            for(int i = 0; i < this.Text.Length; i++)
+            {
+                size = g.MeasureString(this.Text[i].ToString(), this.Font);
+                if(lines[0] + size.Width > nw)
+                {
+                    lines[0] = 0;
+                    lines[1]++;
+                }
+
+                lines[0] += (int)size.Width;
+            }
+
+            lines[0] += (int)size.Width;
+            return lines;
+        }
+
         public float Draw(Graphics g, TextSize size, int width)
         {
             float x = 0;
@@ -54,45 +79,10 @@ namespace Irc.Irc
                 }
                 g.FillRectangle(new SolidBrush(this.Background), x, size.GetY(), s.Width, s.Height);
                 g.DrawString(this.Text[i].ToString(), this.Font, new SolidBrush(this.Color), x, size.GetY());
-                x += s.Width;
+                x += s.Width-2;
             }
 
             return x + s.Width;
-            /*
-            SizeF s = g.MeasureString(this.Text, this.Font);
-            if (s.Width + x <= width)
-            {
-                if (this.Background != Color.FromArgb(255, 255, 255))
-                    g.FillRectangle(new SolidBrush(this.Background), x, size.GetY(), s.Width, s.Height);
-                g.DrawString(this.Text, this.Font, new SolidBrush(this.Color), x, size.GetY());
-            }
-            else
-            {
-                int i = 0;
-                string text = "";
-                for (; i < this.Text.Length; i++)
-                {
-                    SizeF n = g.MeasureString(text + this.Text[i], this.Font);
-                    if (n.Width + x > width)
-                    {
-                        if (this.Background != Color.FromArgb(255, 255, 255))
-                            g.FillRectangle(new SolidBrush(this.Background), x, size.GetY(), s.Width, s.Height);
-                        g.DrawString(text, this.Font, new SolidBrush(this.Color), x, size.GetY());
-                        text = "";
-                        size.NextLine();
-                        x = 0;
-                    }
-                    s = n;
-                }
-                if(i < this.Text.Length)
-                {
-                    if (this.Background != Color.FromArgb(255, 255, 255))
-                        g.FillRectangle(new SolidBrush(this.Background), x, size.GetY(), s.Width, s.Height);
-                    g.DrawString(text, this.Font, new SolidBrush(this.Color), x, size.GetY());
-                }
-            }
-            return s.Width + x;
-            */
         }
     }
 }

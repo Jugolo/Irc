@@ -193,7 +193,6 @@ namespace Irc
                         {
                             MessageBox.Show(im.Type);
                         }
-                        connection.Start();
                         connection.SetNick(param[0]);
                         break;
                     default:
@@ -265,6 +264,7 @@ namespace Irc
             this.connections.Add(connection);
             this.channel1.Select(this, identify, "*");
             this.channel1.ShowLine(identify, "*", "", "Open connection");
+            connection.Connect();
         }
 
         private void Form1_Load(object sender, EventArgs e)
