@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Irc.Database;
+using System;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace Irc.Irc
 {
@@ -10,10 +9,10 @@ namespace Irc.Irc
         private TextPart Message;
         public int Lines { get; private set; }
 
-        public MessageParts(string from, string message)
+        public MessageParts(string from, string message, Config config)
         {
             DateTime time = DateTime.Now;
-            string text = "[" + this.ConvertTime(time.Hour) + ":" + this.ConvertTime(time.Minute) + "]";
+            string text = '\x003'.ToString()+config["output.message.time.color.font"] +","+config["output.message.time.color.back"]+"[" + this.ConvertTime(time.Hour) + ":" + this.ConvertTime(time.Minute) + "]"+'\x003'.ToString();
             if(from != null)
             {
                 text += " " + from + ": ";

@@ -105,6 +105,8 @@ namespace torrent.Script.Token
                 case "true":
                 case "false":
                     return new TokenBuffer("bool", name);
+                case "null":
+                    return new TokenBuffer("null", "null");
             }
             return new TokenBuffer("identify", name);
         }

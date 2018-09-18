@@ -16,9 +16,11 @@ namespace Irc.Forms
         public delegate void OnSendMessage(string identify, string channel, string message);
         private OnSendMessage OSM;
         private Dictionary<string, Dictionary<string, string>> topics = new Dictionary<string, Dictionary<string, string>>();
+        private Form1 main;
 
         public Channel(Form1 main)
         {
+            this.main = main;
             InitializeComponent(main);
             this.channelButton1.AddEvent(OnSend);
         }
@@ -43,11 +45,12 @@ namespace Irc.Forms
             return null;
         }
 
-        public void Select(Form1 form, string identify, string channel)
+        public void Select(string identify, string channel)
         {
             this.message1.Select(identify, channel);
             this.UserList.Select(identify, channel);
-            form.SetTitle();
+            this.main.MarkRead(identify, channel);
+            this.main.SetTitle();
         }
 
         public bool ChannelExists(string identify, string channel)
@@ -57,7 +60,12 @@ namespace Irc.Forms
 
         public void ShowLine(string identify, string channel, string from, string message)
         {
-            this.message1.ShowLine(identify, channel, from, message);
+            if(this.SelectedIdentify() != identify || this.SelectedChannel() != channel)
+            {
+                this.main.MarkUnread(identify, channel);
+            }
+            IrcConection conection = this.main.GetConnection(identify);
+            this.message1.ShowLine(identify, channel, from, message, conection.Config);
         }
 
         public void AppendUser(string indentify, string channel, UserInfo info)
@@ -68,6 +76,15 @@ namespace Irc.Forms
         public bool RemoveUser(string identify, string channel, string nick)
         {
             return this.UserList.RemoveUser(identify, channel, nick);
+        }
+
+        public void UdateNick(string identify, string oldnick, string newnick)
+        {
+            string[] channels = this.UserList.UpdateNick(identify, oldnick, newnick);
+            for(int i = 0; i < channels.Length; i++)
+            {
+                this.ShowLine(identify, channels[i], null, IrcUntil.ColoeredText(3, 0, oldnick + " changed nick to " + newnick));
+            }
         }
 
         public void SetSendMessageEvent(OnSendMessage osm)

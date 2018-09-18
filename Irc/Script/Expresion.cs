@@ -186,6 +186,12 @@ namespace torrent.Script
                 return exp;
             }
 
+            if (buffer.Is("null"))
+            {
+                exp.Type = ExpresionType.Null;
+                return exp;
+            }
+
             if (buffer.Is("number"))
             {
                 exp.Type = ExpresionType.Number;

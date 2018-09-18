@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Irc.Irc;
+using Irc.Database;
 
 namespace Irc.Forms
 {
@@ -61,7 +62,7 @@ namespace Irc.Forms
             return this.MP.ContainsKey(identify) && this.MP[identify].ContainsKey(channel);
         }
 
-        public void ShowLine(string identify, string channel, string from, string message)
+        public void ShowLine(string identify, string channel, string from, string message, Config config)
         {
             if (!this.MP.ContainsKey(identify))
                 this.MP.Add(identify, new Dictionary<string, ChannelInfo>());
@@ -69,7 +70,7 @@ namespace Irc.Forms
             if (!this.MP[identify].ContainsKey(channel))
                 this.MP[identify].Add(channel, new ChannelInfo());
 
-            this.MP[identify][channel].MessageParts.Add(new MessageParts(from, message));
+            this.MP[identify][channel].MessageParts.Add(new MessageParts(from, message, config));
 
             this.RePaint();
         }

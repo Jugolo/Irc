@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Irc.Script.Libary;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -40,6 +41,8 @@ namespace torrent.Script.Libary
                 //System function
                 case "System.Alert":
                     return new FunctionValue(new FunctionNativeInstance("@System.Alert", LibSystem.Alert));
+                case "System.Rand":
+                    return new FunctionValue(new FunctionNativeInstance("@System.Rand", LibSystem.Rand));
                 //File functions
                 case "System.IO.File.Exists":
                     return new FunctionValue(new FunctionNativeInstance("@System.Io.File.Exists", LibaryFile.GetExists));
@@ -61,13 +64,16 @@ namespace torrent.Script.Libary
                     return new FunctionValue(new FunctionNativeInstance("@System.Array.Count", LibaryArray.GetCount));
                 //String function
                 case "System.String.Length":
-                    return new FunctionValue(new FunctionNativeInstance("@System.Array.Length", LibaryString.Length));
+                    return new FunctionValue(new FunctionNativeInstance("@System.String.Length", LibaryString.Length));
                 case "System.String.CharArray":
                     return new FunctionValue(new FunctionNativeInstance("@System.String.CharArray", LibaryString.CharArray));
                 case "System.String.Strpos":
                     return new FunctionValue(new FunctionNativeInstance("@System.String.Strpos", LibaryString.Strpos));
                 case "System.String.Substr":
                     return new FunctionValue(new FunctionNativeInstance("@System.String.Substr", LibaryString.Substr));
+                //Hash functions
+                case "System.Hash.Sha1":
+                    return new FunctionValue(new FunctionNativeInstance("@System.Hash.Sha1", LibHash.Sha1));
                 default:
                     throw new ScriptRuntimeException("Unknown system libary detected: " + arg);
             }

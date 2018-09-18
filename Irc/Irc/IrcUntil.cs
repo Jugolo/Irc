@@ -21,7 +21,12 @@ namespace Irc.Irc
 
         internal static string ColoeredText(int text, int back, string message)
         {
-            return "\x003" + text + "," + back + message+"\x003";
+            return '\x003'.ToString() + text + "," + back + message+"\x003";
+        }
+
+        internal static string Action(string message)
+        {
+            return '\x001'.ToString() + " " + message;
         }
     }
 }

@@ -43,6 +43,19 @@ namespace Irc.Database
                 throw new Exception("Mising saveServer in database server script");
         }
 
+        public void UpdateNick(string identify, string nick)
+        {
+            if (this.energy.HasValue("updateNick"))
+            {
+                this.energy.GetVariabel("udateNick").ToFunction().Call(new Value[]{
+                    new StringValue(identify),
+                    new StringValue(nick)
+                    });
+            }
+            else
+                throw new Exception("Missing updateNick in server script database file");
+        }
+
         public void SaveChannel(string identify, string channel)
         {
             if (this.energy.HasValue("saveChannel"))

@@ -287,6 +287,8 @@ namespace torrent.Script
                     return new RefrenceValue(r);
                 case ExpresionType.Function:
                     return new FunctionValue(new FunctionScriptInstance("", expresion.FuncArgs, expresion.Body, this));
+                case ExpresionType.Null:
+                    return new NullValue();
             }
 
             throw new ScriptRuntimeException("Unknown expresion type detected '" + expresion.Type + "'. Parser out of sync");

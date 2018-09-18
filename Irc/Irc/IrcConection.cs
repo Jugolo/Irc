@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Irc.Database;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
@@ -22,6 +23,7 @@ namespace Irc.Irc
         private string[] Channels { get; set; }
         public string Host { get; private set; }
         public int Port { get; private set; }
+        public Config Config { get; private set; }
         private IrcScript script;
         private string nick;
         private string identify;
@@ -38,6 +40,7 @@ namespace Irc.Irc
             this.identify = identify;
             this.Channels = channels;
             this.Status = ConnectionStatus.Paused;
+            this.Config = new Config(identify);
         }
 
         public void Connect() {

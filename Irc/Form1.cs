@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Text;
 using System.Windows.Forms;
 using Irc.Database;
 using Irc.Forms;
@@ -92,7 +94,7 @@ namespace Irc
                     this.OpenNewServerDialog(); 
                     return true;
                 }
-                this.channel1.Select(this, ns, "*");
+                this.channel1.Select(ns, "*");
             }
             return true;
         }
@@ -124,7 +126,7 @@ namespace Irc
 
             if(this.channel1.SelectedIdentify() == identify && this.channel1.SelectedChannel() == name)
             {
-                this.channel1.Select(this, this.channel1.SelectedIdentify(), this.channel1.GetTopChannel(identify));
+                this.channel1.Select(this.channel1.SelectedIdentify(), this.channel1.GetTopChannel(identify));
             }
             return true;
         }
@@ -154,7 +156,7 @@ namespace Irc
                 if (space == -1)
                     command = message.Substring(1).Trim();
                 else
-                    command = message.Substring(1, space - 1).ToLower().Trim();
+                    command = message.Substring(1, Math.Max(0, space - 1)).ToLower().Trim();
                 string[] param = space == -1 ? new string[0] : message.Substring(space + 1).Split(' ');
                 switch (command)
                 {
@@ -178,34 +180,62 @@ namespace Irc
                     case "nick":
                         if (param.Length == 0)
                             return;
-                        //be sure we stop the loop
-                        connection.Pause();
-                        MessageBox.Show("NICK " + param[0]);
                         connection.SendLine("NICK " + param[0]);
                         connection.Flush();
-                        IrcMessage im = IrcMessage.Parse(connection.ReadLine());
-                        if(im.Type == "433")
-                        {
-                            MessageBox.Show("The nickname '" + param[0] + "' is in use. Please pick a new one");
-                            return;
-                        }
-                        else
-                        {
-                            MessageBox.Show(im.Type);
-                        }
-                        connection.SetNick(param[0]);
                         break;
                     default:
-                        this.channel1.ShowLine(identify, channel, null, "Unknown command '"+command+"'");
+                        command = command.ToUpper();
+                        StringBuilder p = new StringBuilder();
+                        for(int i = 0; i < param.Length; i++)
+                        {
+                            p.Append(" "+param[i]);
+                        }
+                        connection.SendLine(command + p.ToString());
+                        connection.Flush();
                         break;
                 }
             }
             else
             {
-                connection.SendLine("PRIVMSG " + channel + " :" + message);
-                connection.Flush();
+                if (channel != "*")
+                {
+                    connection.SendLine("PRIVMSG " + channel + " :" + message);
+                    connection.Flush();
+                    this.channel1.ShowLine(identify, channel, connection.GetNick(), message);
+                }
+                else
+                {
+                    this.channel1.ShowLine(identify, "*", "", IrcUntil.ColoeredText(4, 0, "You can not send message in server windo"));
+                }
+            }
+        }
 
-                this.channel1.ShowLine(identify, channel, connection.GetNick(), message);
+        public void MarkRead(string identify, string channel)
+        {
+            if (this.Nodes.ContainsKey(identify))
+            {
+                foreach(TreeNode node in this.Nodes[identify].Nodes)
+                {
+                    if(channel == node.Text)
+                    {
+                        node.ForeColor = Color.Black;
+                    }
+                }
+            }
+        }
+
+        public void MarkUnread(string identify, string channel)
+        {
+            if (this.Nodes.ContainsKey(identify))
+            {
+                foreach(TreeNode n in this.Nodes[identify].Nodes)
+                {
+                    if(n.Text == channel)
+                    {
+                        n.ForeColor = Color.Red;
+                        return;
+                    }
+                }
             }
         }
 
@@ -243,12 +273,29 @@ namespace Irc
                         if (!this.ChannelExists(connection.GetIdentify(), message.Nick))
                         {
                             this.AppendChannel(connection.GetIdentify(), message.Nick);
-                            this.channel1.Select(this, connection.GetIdentify(), message.Nick);
+                            this.channel1.Select(connection.GetIdentify(), message.Nick);
+                        }
+                    }
+                    if(message.ParamsTrailing.IndexOf('\x001'.ToString()) == 0)
+                    {
+                        if(message.ParamsTrailing.IndexOf('\x001'.ToString()+"ACTION") == 0)
+                        {
+                            this.channel1.ShowLine(connection.GetIdentify(), message.ParamsTrailing == connection.GetNick() ? message.Nick : message.ParamsMidle, null, IrcUntil.ColoeredText(6, 0, "* " + message.Nick + " " + message.ParamsTrailing.Substring(8)));
+                            return;
                         }
                     }
                     this.channel1.ShowLine(connection.GetIdentify(), message.ParamsMidle == connection.GetNick() ? message.Nick : message.ParamsMidle, message.Nick, message.ParamsTrailing);
                     break;
-
+                case "NICK":
+                    string n = message.ParamsTrailing;
+                    if(n == connection.GetNick())
+                    {
+                        //this is my there will or foreced to chage nick name. 
+                        connection.SetNick(n);
+                        this.Server.UpdateNick(connection.GetIdentify(), n);
+                    }
+                    this.channel1.UdateNick(connection.GetIdentify(), message.Nick, n);
+                    break;
             }
         }
 
@@ -262,7 +309,7 @@ namespace Irc
             this.treeView1.EndUpdate();
             this.treeView1.SelectedNode = node;
             this.connections.Add(connection);
-            this.channel1.Select(this, identify, "*");
+            this.channel1.Select(identify, "*");
             this.channel1.ShowLine(identify, "*", "", "Open connection");
             connection.Connect();
         }
@@ -305,7 +352,7 @@ namespace Irc
 
             this.channel[identify].Add(new IrcChannel(this, channel, this.GetConnection(identify)));
 
-            this.channel1.Select(this, identify, channel);
+            this.channel1.Select(identify, channel);
             if(channel.IndexOf("#") == 0)
                 this.channel1.ShowLine(identify, channel, "", "You joined the channel");
 
@@ -341,9 +388,9 @@ namespace Irc
         private void treeViewSelect(object sender, TreeViewEventArgs e)
         {
             if (e.Node.Parent != null)
-                this.channel1.Select(this, e.Node.Parent.Text, e.Node.Text);
+                this.channel1.Select(e.Node.Parent.Text, e.Node.Text);
             else
-                this.channel1.Select(this, e.Node.Text, "*");
+                this.channel1.Select(e.Node.Text, "*");
         }
 
         private void connectToNewServerToolStripMenuItem_Click(object sender, EventArgs e)

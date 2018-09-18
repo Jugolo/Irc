@@ -57,6 +57,20 @@ namespace Irc.Forms
             return false;
         }
 
+        public string[] UpdateNick(string identify, string oldnick, string newnick)
+        {
+            List<string> array = new List<string>();
+            if (user.ContainsKey(identify))
+            {
+                Dictionary<string, List<UserInfo>> channels = this.user[identify];
+                foreach(string channel in channels.Keys)
+                {
+
+                }
+            }
+            return array.ToArray();
+        }
+
         public void RemoveChannel(string identify, string channel)
         {
             if(this.user.ContainsKey(identify) && this.user.ContainsKey(channel))
@@ -152,11 +166,19 @@ namespace Irc.Forms
                     contextMenuStrip1.Items.Clear();
                     contextMenuStrip1.Items.Add(Current[line].Nick).Enabled = false;
                     contextMenuStrip1.Items.Add("Query").Click += QueryUserClick;
+                    contextMenuStrip1.Items.Add("Slap").Click += SlqpUserClick;
                     contextMenuStrip1.Show(this, e.X, e.Y);
                 }
                 else
                     MessageBox.Show("Line: "+line);
             }
+        }
+
+        private void SlqpUserClick(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            int line = (item.Owner.Location.Y / 10) - 8;
+            
         }
 
         private void QueryUserClick(object sender, EventArgs e)

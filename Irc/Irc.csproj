@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectionStatus.cs" />
+    <Compile Include="Database\Config.cs" />
     <Compile Include="Database\Servers.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -117,6 +118,7 @@
     <Compile Include="Script\Libary\LibaryFile.cs" />
     <Compile Include="Script\Libary\LibaryString.cs" />
     <Compile Include="Script\Libary\LibaryType.cs" />
+    <Compile Include="Script\Libary\LibHash.cs" />
     <Compile Include="Script\Libary\LibSystem.cs" />
     <Compile Include="Script\Libary\ScriptLibary.cs" />
     <Compile Include="Script\Refrences\ArrayRefrence.cs" />

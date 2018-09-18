@@ -22,6 +22,9 @@ namespace Irc.Irc
             this.connection = connection;
             this.main = main;
 
+            this.energy.PutValue("_identify", new StringValue(connection.GetIdentify()));
+            this.pushFunction(new FunctionNativeInstance("sendAction", SendAction));
+
             this.pushFunction(new FunctionNativeInstance("on", On));
             this.pushFunction(new FunctionNativeInstance("action", _Action));
             this.pushFunction(new FunctionNativeInstance("privmsg", Privmsg));
@@ -31,8 +34,38 @@ namespace Irc.Irc
             this.pushFunction(new FunctionNativeInstance("rawMessage", RawMessage));
             this.pushFunction(new FunctionNativeInstance("myNick", MyNick));
             this.pushFunction(new FunctionNativeInstance("isPM", IsPM));
+            this.pushFunction(new FunctionNativeInstance("join", Join));
+
+            //config value
+            this.pushFunction(new FunctionNativeInstance("config_set", ConfigSet));
+            this.pushFunction(new FunctionNativeInstance("config_get", ConfigGet));
 
             energy.Parse(new InputTextReader(File.OpenText("script.txt")));
+        }
+
+        public Value Join(Value[] args)
+        {
+            this.connection.SendLine("JOIN " + args[0].toString());
+            this.connection.Flush();
+            return new NullValue();
+        }
+
+        public Value SendAction(Value[] args)
+        {
+            this.connection.SendLine("PRIVMSG " + args[0].toString() + " :" + '\x001'.ToString() + "ACTION " + args[1].ToString());
+            this.connection.Flush();
+            return new NullValue();
+        }
+
+        public Value ConfigSet(Value[] args)
+        {
+            this.connection.Config[args[0].toString()] = args[1].toString();
+            return new NullValue();
+        }
+
+        public Value ConfigGet(Value[] args)
+        {
+            return new StringValue(this.connection.Config[args[0].toString()]);
         }
 
         private Value IsPM(Value[] args)

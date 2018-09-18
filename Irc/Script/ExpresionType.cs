@@ -27,5 +27,6 @@
         SelfPlus,
         SelfMinus,
         Function,
+        Null,
     }
 }

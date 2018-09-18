@@ -63,49 +63,6 @@ namespace Irc.Irc
             }
 
             return message;
-
-            string[] parts = line.Split(new char[] { ' ' }, 3);
-            message.Raw = line;
-            if (parts.Length == 3 && parts[0].IndexOf(":") == 0)
-            {
-                message.Prefix = parts[0];
-                message.Type = parts[1];
-                message.ParamsFull = parts[2];
-            }
-            else if (parts.Length == 2 && parts[0].IndexOf(":") != 0)
-            {
-                message.Type = parts[0];
-                message.ParamsFull = parts[0];
-            }
-            else
-            {
-                return null;
-            }
-
-            Regex regex = new Regex("^:(.*)!(.*)@(.*)");
-            if (message.Prefix != null && regex.IsMatch(message.Prefix))
-            {
-                Match match = regex.Match(message.Prefix);
-                message.IsClient = true;
-                message.Nick = match.Groups[1].Value;
-                message.Id = match.Groups[2].Value;
-                message.Mask = match.Groups[3].Value;
-            }
-            else
-            {
-                message.IsClient = false;
-                string prefix = message.Prefix;
-                if(prefix == null)
-                    message.Nick = prefix.Substring(1);
-            }
-
-            parts = message.ParamsFull.Split(new char[] { ' ' }, 2);
-            message.ParamsMidle = parts[0];
-            if (parts.Length > 1)
-                message.ParamsTrailing = parts[1].TrimStart().Substring(1);
-
-
-            return message;
         }
     }
 }
