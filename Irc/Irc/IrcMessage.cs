@@ -1,8 +1,9 @@
-﻿using System.Text.RegularExpressions;
+﻿using Irc.Irc.IS;
+using System.Text.RegularExpressions;
 
 namespace Irc.Irc
 {
-    public class IrcMessage
+    public class IrcMessage : NickGiven
     {
         public string Raw { get; set; }
         public string Prefix { get; set; }
@@ -50,19 +51,24 @@ namespace Irc.Irc
             }
 
             message.Type = line.Substring(0, line.IndexOf(" "));
-            line = line.Substring(line.IndexOf(" ") + 1);
+            line = line.Substring(line.IndexOf(" "));
 
             if(line.IndexOf(" :") != -1)
             {
-                message.ParamsMidle = line.Substring(0, line.IndexOf(" :"));
-                message.ParamsTrailing = line.Substring(line.IndexOf(" :") + 2);
+                message.ParamsMidle = line.Substring(0, line.IndexOf(" :")).Trim();
+                message.ParamsTrailing = line.Substring(line.IndexOf(" :") + 2).TrimStart();
             }
             else
             {
-                message.ParamsMidle = line;
+                message.ParamsMidle = line.Trim();
             }
 
             return message;
+        }
+
+        public string GetNick()
+        {
+            return this.Nick;
         }
     }
 }

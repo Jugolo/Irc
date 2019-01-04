@@ -1,6 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-using torrent.Script.Error;
+﻿using Irc.Script.Exceptions;
 
 namespace Irc.Irc
 {
@@ -15,7 +13,7 @@ namespace Irc.Irc
                 case "JOIN":
                     return message.ParamsMidle;
                 default:
-                    throw new ScriptRuntimeException("Could not finde any channels in command: " + message.Type);
+                    throw new EcmaRuntimeException("Could not finde any channels in command: " + message.Type);
             }
         }
 

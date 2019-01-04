@@ -13,123 +13,107 @@ namespace Irc.Forms
 {
     public partial class Channel : UserControl
     {
-        public delegate void OnSendMessage(string identify, string channel, string message);
-        private OnSendMessage OSM;
-        private Dictionary<string, Dictionary<string, string>> topics = new Dictionary<string, Dictionary<string, string>>();
         private Form1 main;
+        private IrcServerInfo Info = new IrcServerInfo();
+        
+
+        public string SelectedServer { get; private set; }
+        public string SelectedChannel { get; private set; }
+        public string Nick { get { return this.Info.GetNick(this.SelectedServer); } }
 
         public Channel(Form1 main)
         {
             this.main = main;
             InitializeComponent(main);
-            this.channelButton1.AddEvent(OnSend);
+        }
+
+        public void CreateServer(string server, string nick)
+        {
+            this.Info.CreateServer(server, nick, this.message1, this.UserList);
+            this.Select(server, "*");
+            this.Write(server, "*", "", "Open connection");
         }
 
         public void SetTopic(string identify, string channel, string topic)
         {
-            this.ShowLine(identify, channel, null, "Topic: " + topic);
-            if (!this.topics.ContainsKey(identify))
-                this.topics.Add(identify, new Dictionary<string, string>());
-            if (!this.topics[identify].ContainsKey(channel))
-                this.topics[identify].Add(channel, topic);
-            else
-                this.topics[identify][channel] = topic;
+            this.Info.SetTopic(identify, channel, topic);
+            this.Write(identify, channel, "", topic);
         }
 
         public string GetCurrentTopic()
         {
-            if(this.topics.ContainsKey(this.message1.GetSelectedIdentify()) && this.topics[this.message1.GetSelectedIdentify()].ContainsKey(this.message1.GetSelectedChannel()))
-            {
-                return this.topics[this.message1.GetSelectedIdentify()][this.message1.GetSelectedChannel()];
-            }
-            return null;
+            return this.Info.GetTopic(this.SelectedServer, this.SelectedChannel);
         }
 
-        public void Select(string identify, string channel)
+        public void AppendUser(string server, string channel, UserInfo info)
         {
-            this.message1.Select(identify, channel);
-            this.UserList.Select(identify, channel);
-            this.main.MarkRead(identify, channel);
-            this.main.SetTitle();
+            this.Info.AppendUser(server, channel, info);
         }
 
-        public bool ChannelExists(string identify, string channel)
+        public void RemoveUser(string server, string channel, string nick)
         {
-            return this.message1.ChannelExists(identify, channel);
+            this.Info.RemoveUser(server, channel, nick);
         }
 
-        public void ShowLine(string identify, string channel, string from, string message)
+        public void UpdateNick(string server, string nick, string newNick)
         {
-            if(this.SelectedIdentify() != identify || this.SelectedChannel() != channel)
-            {
-                this.main.MarkUnread(identify, channel);
-            }
-            IrcConection conection = this.main.GetConnection(identify);
-            this.message1.ShowLine(identify, channel, from, message, conection.Config);
+            this.Info.UpdateNick(server, nick, newNick);
         }
 
-        public void AppendUser(string indentify, string channel, UserInfo info)
+        public void RemoveServer(string name)
         {
-            this.UserList.AppendUser(indentify, channel, info);
-        }
-
-        public bool RemoveUser(string identify, string channel, string nick)
-        {
-            return this.UserList.RemoveUser(identify, channel, nick);
-        }
-
-        public void UdateNick(string identify, string oldnick, string newnick)
-        {
-            string[] channels = this.UserList.UpdateNick(identify, oldnick, newnick);
-            for(int i = 0; i < channels.Length; i++)
-            {
-                this.ShowLine(identify, channels[i], null, IrcUntil.ColoeredText(3, 0, oldnick + " changed nick to " + newnick));
-            }
-        }
-
-        public void SetSendMessageEvent(OnSendMessage osm)
-        {
-            this.OSM = osm;
-        }
-
-        public void CloseServer(string identify)
-        {
-            this.UserList.RemoveServer(identify);
-            this.message1.RemoveServer(identify);
-        }
-
-        public bool CloseChannel(string identify, string channel)
-        {
-            this.UserList.RemoveChannel(identify, channel);
-            return this.message1.RemoveChannel(identify, channel);
-        }
-
-        public string SelectedIdentify()
-        {
-            return this.message1.GetSelectedIdentify();
-        }
-
-        public string SelectedChannel()
-        {
-            return this.message1.GetSelectedChannel();
+            this.Info.RemoveServer(name);
         }
 
         public string GetTopServer()
         {
-            return this.message1.GetTopServer();
+            return this.Info.GetTopServer();
         }
 
-        public string GetTopChannel(string identify)
+        public bool RemoveChannel(string server, string channel)
         {
-            return this.message1.GetTopChannel(identify);
+            return this.Info.RemoveChannel(server, channel);
         }
 
-        private void OnSend(string message)
+        public string GetTopChannel(string server)
         {
-            if(this.OSM != null)
-            {
-                this.OSM(this.message1.GetSelectedIdentify(), this.message1.GetSelectedChannel(), message);
-            }
+            return this.Info.GetTopChannel(server);
+        }
+
+        public void Select(string server, string channel)
+        {
+            if(this.SelectedServer != null && this.SelectedChannel != null)
+                this.Info.UnSelect(this.SelectedServer, this.SelectedChannel);
+            this.SelectedServer = server;
+            this.SelectedChannel = channel;
+            this.main.SetTitle();
+            this.Info.Select(server, channel);
+        }
+
+        public void Write(string message)
+        {
+            this.Write(
+                this.SelectedServer,
+                this.SelectedChannel,
+                this.Nick,
+                message
+                );
+        }
+
+        public void Write(string server, string channel, string nick, string message)
+        {
+            this.Info.Write(server, channel, nick, message);
+        }
+
+        public bool IsChannelExists(string server, string channel)
+        {
+            return this.Info.IsChannelExists(server, channel);
+        }
+
+        public void CreateChannel(string server, string channel)
+        {
+            this.Info.CreateChannel(server, channel);
+            this.Select(server, channel);
         }
     }
 }

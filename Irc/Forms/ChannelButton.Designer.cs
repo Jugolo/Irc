@@ -41,7 +41,6 @@
             this.tableLayoutPanel1.Controls.Add(this.button1, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.richTextBox1, 0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel1_Paint);
             // 
             // button1
             // 
@@ -62,8 +61,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "ChannelButton";
-            this.Load += new System.EventHandler(this.ChannelButton_Load);
-            this.SizeChanged += new System.EventHandler(this.ChannelButton_SizeChanged);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
 

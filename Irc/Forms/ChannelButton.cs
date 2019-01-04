@@ -12,50 +12,29 @@ namespace Irc.Forms
 {
     public partial class ChannelButton : UserControl
     {
-        public delegate void OnSend(string msg);
+        private Form1 Main;
 
-        private OnSend events;
-
-        public ChannelButton()
+        public ChannelButton(Form1 main)
         {
+            this.Main = main;
             InitializeComponent();
-            this.changeSize();
         }
 
-        public void AddEvent(OnSend send)
+        public void Write(string line)
         {
-            this.events = send;
+            this.richTextBox1.Text = line;
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        public void Send()
         {
-
-        }
-
-        private void ChannelButton_SizeChanged(object sender, EventArgs e)
-        {
-            this.changeSize();
-        }
-
-        private void changeSize()
-        {
-        }
-
-        private void ChannelButton_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
-        {
-
+            this.button1.PerformClick();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if(this.richTextBox1.Text.TrimStart().Length > 0 && this.events != null)
+            if(this.richTextBox1.Text.TrimStart().Length > 0)
             {
-                this.events(this.richTextBox1.Text);
+                this.Main.GetSendMessage(this.richTextBox1.Text.Trim());
             }
             this.richTextBox1.Text = "";
         }

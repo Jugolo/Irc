@@ -28,35 +28,33 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
+            this.richTextBox1 = new InvokeSafeRichTextBox();
             this.SuspendLayout();
             // 
-            // vScrollBar1
+            // richTextBox1
             // 
-            this.vScrollBar1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.vScrollBar1.Location = new System.Drawing.Point(1085, 0);
-            this.vScrollBar1.Name = "vScrollBar1";
-            this.vScrollBar1.Size = new System.Drawing.Size(26, 387);
-            this.vScrollBar1.TabIndex = 0;
-            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
+            this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox1.Location = new System.Drawing.Point(0, 0);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(741, 252);
+            this.richTextBox1.TabIndex = 0;
+            this.richTextBox1.Text = "";
             // 
             // Message
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.Controls.Add(this.vScrollBar1);
+            this.Controls.Add(this.richTextBox1);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Message";
-            this.Size = new System.Drawing.Size(1111, 387);
-            this.Load += new System.EventHandler(this.Message_Load);
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.Message_Paint);
-            this.Resize += new System.EventHandler(this.Message_Resize);
+            this.Size = new System.Drawing.Size(741, 252);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.VScrollBar vScrollBar1;
+        private System.Windows.Forms.RichTextBox richTextBox1;
     }
 }

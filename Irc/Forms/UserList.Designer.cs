@@ -1,4 +1,6 @@
-﻿namespace Irc.Forms
+﻿using System.Windows.Forms;
+
+namespace Irc.Forms
 {
     partial class UserList
     {
@@ -29,30 +31,46 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            this.listBox1 = new System.Windows.Forms.ListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // listBox1
+            // 
+            this.listBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.ItemHeight = 20;
+            this.listBox1.Location = new System.Drawing.Point(0, 0);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(810, 389);
+            this.listBox1.Sorted = true;
+            this.listBox1.TabIndex = 0;
+            this.listBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listBox1_MouseClick);
+            this.listBox1.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.listBox1_DrawItem);
+            this.listBox1.MeasureItem += new System.Windows.Forms.MeasureItemEventHandler(this.listBox1_MeasureItem);
+            this.listBox1.ContextMenuStrip = this.contextMenuStrip1;
             // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(241, 97);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(241, 37);
             // 
             // UserList
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.listBox1);
             this.Name = "UserList";
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.UserList_Paint);
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.UserList_MouseClick);
-            this.contextMenuStrip1.ResumeLayout(false);
+            this.Size = new System.Drawing.Size(810, 389);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ListBox listBox1;
+        private ContextMenuStrip contextMenuStrip1;
     }
 }

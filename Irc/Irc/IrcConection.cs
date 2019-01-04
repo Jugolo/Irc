@@ -1,12 +1,12 @@
-﻿using Irc.Database;
+﻿using Irc.Irc.IS;
+using Irc.Script;
+using Irc.Script.Types;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
-using torrent.Script;
-using torrent.Script.Values;
 
 namespace Irc.Irc
 {
@@ -18,16 +18,17 @@ namespace Irc.Irc
         private StreamWriter writer;
         private StreamReader reader;
         private IRCEventListner events;
-        public Dictionary<string, FunctionInstance> scriptEvenets = new Dictionary<string, FunctionInstance>();
-        public Dictionary<string, FunctionInstance> scriptAction = new Dictionary<string, FunctionInstance>();
+        public Dictionary<string, EcmaHeadObject> scriptEvenets = new Dictionary<string, EcmaHeadObject>();
+        public Dictionary<string, EcmaHeadObject> scriptAction = new Dictionary<string, EcmaHeadObject>();
         private string[] Channels { get; set; }
         public string Host { get; private set; }
         public int Port { get; private set; }
-        public Config Config { get; private set; }
-        private IrcScript script;
+        public IrcScript script { get; private set; }
         private string nick;
         private string identify;
         private Form1 Main;
+        private Thread thread;
+        private Dictionary<string, WhoIsData> whois = new Dictionary<string, WhoIsData>();
         
         public ConnectionStatus Status { get; set; }
 
@@ -40,11 +41,10 @@ namespace Irc.Irc
             this.identify = identify;
             this.Channels = channels;
             this.Status = ConnectionStatus.Paused;
-            this.Config = new Config(identify);
         }
 
         public void Connect() {
-            Thread thread = new Thread(DoConnect);
+            thread = new Thread(DoConnect);
             thread.Start();
         }
 
@@ -63,19 +63,19 @@ namespace Irc.Irc
                     break;
                 }catch(IOException e)
                 {
-                    this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect: "+e.Message);
+                    this.Main.channel1.Write(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect: "+e.Message);
                 }catch(SocketException e)
                 {
-                    this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect: " + e.Message);
+                    this.Main.channel1.Write(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect: " + e.Message);
                 }
                 Thread.Sleep(5000);
             }
             if(i == 10)
             {
-                this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect to the server.");
+                this.Main.channel1.Write(this.identify, "*", "", '\x003'.ToString()+"4,0Could not connect to the server.");
                 return;
             }
-            this.Main.channel1.ShowLine(this.identify, "*", "", '\x003'.ToString()+"3,0Is now connected");
+            this.Main.channel1.Write(this.identify, "*", "", '\x003'.ToString()+"3,0Is now connected");
             this.Status = ConnectionStatus.Startet;
             this.script = new IrcScript(this, this.Main);
             this.Open();
@@ -197,6 +197,47 @@ namespace Irc.Irc
                         }
                         this.Flush();
                         break;
+                    case "301":
+                        nick = message.ParamsMidle.Split(' ')[1];
+                        if (this.whois.ContainsKey(nick))
+                        {
+                            whois[nick].Away = true;
+                            whois[nick].AwayMessage = message.ParamsTrailing;
+                        }
+                        break;
+                    case "311":
+                        string[] wn = message.ParamsMidle.Split(' ');
+                        WhoIsData wd = new WhoIsData();
+                        wd.Nick = wn[1];
+                        if (this.whois.ContainsKey(wn[1]))
+                            this.whois[wn[1]] = wd;
+                        else
+                            this.whois.Add(wn[1], wd);
+                        break;
+                    case "317":
+                        nick = message.ParamsMidle.Split(' ')[1];
+                        if (this.whois.ContainsKey(nick))
+                        {
+
+                        }
+                        break;
+                    case "318":
+                        nick = message.ParamsMidle.Split(' ')[1];
+                        if (this.whois.ContainsKey(nick))
+                        {
+                            if (this.scriptAction.ContainsKey("server.whois"))
+                            {
+                                this.DoAction("server.whois", new ScriptWhoIsData(this.script.State, this.whois[nick]));
+                            }
+                        }
+                        break;
+                    case "319":
+                        nick = message.ParamsMidle.Split(' ')[1];
+                        if (this.whois.ContainsKey(nick))
+                        {
+                            this.whois[nick].Channels = message.ParamsTrailing.Split(' ');
+                        }
+                        break;
                     case "332":
                         this.Main.SetTopic(this.identify, message.ParamsMidle.Substring(message.ParamsMidle.LastIndexOf(' ') + 1), message.ParamsTrailing);
                         break;
@@ -217,6 +258,11 @@ namespace Irc.Irc
                                 info.Nick = users[i];
                             }
                             this.Main.AppendUser(this.identify, message.ParamsMidle.Substring(message.ParamsMidle.LastIndexOf(' ') + 1), info);
+
+                            if (this.scriptEvenets.ContainsKey("353"))
+                            {
+                                this.DoPlugin("353", new ScriptUserInfo(info));
+                            }
                         }
                         break;
                 }
@@ -230,14 +276,30 @@ namespace Irc.Irc
 
                 if (this.scriptEvenets.ContainsKey(message.Type))
                 {
-                    this.DoPlugin(message);
+                    this.DoPlugin(message.Type, new IrcScriptMessage(message));
                 }
             }
         }
 
-        private void DoPlugin(IrcMessage message)
+        private void DoPlugin(string type, EcmaHeadObject message)
         {
-            this.scriptEvenets[message.Type].Call(new Value[] { new IrcScriptMessage(message) });
+            if (scriptEvenets[type] is ICallable)
+            {
+                (scriptEvenets[type] as ICallable).Call(null, new EcmaValue[]
+                    {
+                    EcmaValue.Object(message)
+                    });
+            }
+        }
+
+        public void DoAction(string type, EcmaHeadObject data)
+        {
+            if (scriptAction[type] is ICallable)
+            {
+                (scriptAction[type] as ICallable).Call(null, new EcmaValue[]{
+                    EcmaValue.Object(data)
+                });
+            }
         }
     }
 }

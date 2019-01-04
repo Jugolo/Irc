@@ -1,32 +1,37 @@
-﻿namespace torrent.Script
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Irc.Script
 {
-    public enum ExpresionType
+    enum ExpresionType
     {
+        MultiExpresion,
         Identify,
-        Call,
-        String,
         Assign,
-        Not,
-        Bool,
-        Equel,
-        NotEqual,
-        Plus,
-        Minus,
-        Negetiv,
-        Posetiv,
-        Number,
-        Empty,
-        NamedArray,
-        ArrayGet,
-        LEFT_ARROW,
-        RIGHT_ARROW,
-        CREATOR,
-        LOWER,
+        String,
+        Conditional,
+        Or,
         AND,
-        Array,
-        SelfPlus,
-        SelfMinus,
-        Function,
+        BOR,
+        XOR,
+        BAND,
+        Equlity,
+        Relational,
+        Shift,
+        Additive,
+        Multiplicative,
+        Unary,
+        New,
+        ObjGet,
+        ItemGet,
+        Call,
+        This,
         Null,
+        Bool,
+        Number,
+        VarList
     }
 }

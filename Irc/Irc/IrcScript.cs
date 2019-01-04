@@ -1,141 +1,109 @@
-﻿using System;
+﻿using Irc.Irc.IS;
+using Irc.Script;
+using Irc.Script.Types;
+using Irc.Script.Types.Function;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using torrent.Script;
-using torrent.Script.Error;
-using torrent.Script.Stack;
-using torrent.Script.Values;
+using System.Windows.Forms;
 
 namespace Irc.Irc
 {
-    class IrcScript
+    public class IrcScript
     {
-        private Energy energy = new Energy();
+        private EcmaScript energy = new EcmaScript();
         private IrcConection connection;
         private Form1 main;
 
+        public EcmaState State { get { return this.energy.State; } }
+
         public IrcScript(IrcConection connection, Form1 main)
         {
+            this.energy.BuildStandartLibary();
+            new DefaultScript(this.energy);
             this.connection = connection;
             this.main = main;
 
-            this.energy.PutValue("_identify", new StringValue(connection.GetIdentify()));
-            this.pushFunction(new FunctionNativeInstance("sendAction", SendAction));
+            this.energy.CreateVariable("_identify", EcmaValue.String(connection.GetIdentify()));
+            this.energy.CreateVariable("sendAction", EcmaValue.Object(new NativeFunctionInstance(2, State, SendAction)));
 
-            this.pushFunction(new FunctionNativeInstance("on", On));
-            this.pushFunction(new FunctionNativeInstance("action", _Action));
-            this.pushFunction(new FunctionNativeInstance("privmsg", Privmsg));
-            this.pushFunction(new FunctionNativeInstance("channel", Channel));
-            this.pushFunction(new FunctionNativeInstance("nick", Nick));
-            this.pushFunction(new FunctionNativeInstance("msg", Msg));
-            this.pushFunction(new FunctionNativeInstance("rawMessage", RawMessage));
-            this.pushFunction(new FunctionNativeInstance("myNick", MyNick));
-            this.pushFunction(new FunctionNativeInstance("isPM", IsPM));
-            this.pushFunction(new FunctionNativeInstance("join", Join));
+            this.energy.CreateVariable("on", EcmaValue.Object(new NativeFunctionInstance(2, State, On)));
+            this.energy.CreateVariable("action", EcmaValue.Object(new NativeFunctionInstance(2, State, _Action)));
+            this.energy.CreateVariable("privmsg", EcmaValue.Object(new NativeFunctionInstance(2, State, Privmsg)));
+            this.energy.CreateVariable("myNick", EcmaValue.Object(new NativeFunctionInstance(0, State, MyNick)));
+            this.energy.CreateVariable("isPm", EcmaValue.Object(new NativeFunctionInstance(1, State, IsPM)));
 
-            //config value
-            this.pushFunction(new FunctionNativeInstance("config_set", ConfigSet));
-            this.pushFunction(new FunctionNativeInstance("config_get", ConfigGet));
-
-            energy.Parse(new InputTextReader(File.OpenText("script.txt")));
-        }
-
-        public Value Join(Value[] args)
-        {
-            this.connection.SendLine("JOIN " + args[0].toString());
-            this.connection.Flush();
-            return new NullValue();
-        }
-
-        public Value SendAction(Value[] args)
-        {
-            this.connection.SendLine("PRIVMSG " + args[0].toString() + " :" + '\x001'.ToString() + "ACTION " + args[1].ToString());
-            this.connection.Flush();
-            return new NullValue();
-        }
-
-        public Value ConfigSet(Value[] args)
-        {
-            this.connection.Config[args[0].toString()] = args[1].toString();
-            return new NullValue();
-        }
-
-        public Value ConfigGet(Value[] args)
-        {
-            return new StringValue(this.connection.Config[args[0].toString()]);
-        }
-
-        private Value IsPM(Value[] args)
-        {
-            return new BoolValue(args[0].toString().IndexOf("#") != 0);
-        }
-
-        private Value _Action(Value[] args)
-        {
-            this.connection.scriptAction.Add(args[0].toString(), args[1].ToFunction());
-            return new NullValue();
-        }
-
-        private Value MyNick(Value[] args)
-        {
-            return new StringValue(this.connection.GetNick());
-        }
-
-        private Value On(Value[] args)
-        {
-            this.connection.scriptEvenets.Add(args[0].toString(), args[1].ToFunction());
-            return new NullValue();
-        }
-
-        private void pushFunction(FunctionInstance func)
-        {
-            VariabelDatabaseValue v = this.energy.PutValue(func.Name(), new FunctionValue(func));
-            v.IsGlobal = true;
-            v.IsLock = true;
-        }
-
-        private Value Privmsg(Value[] args)
-        {
-            this.connection.SendLine("PRIVMSG " + args[0].toString() + " :" + args[1].toString());
-            this.connection.Flush();
-            this.main.channel1.ShowLine(this.connection.GetIdentify(), args[0].toString(), this.connection.GetNick(), args[1].toString());
+            this.energy.CreateVariable("join", EcmaValue.Object(new NativeFunctionInstance(1, State, Join)));
+            this.energy.CreateVariable("whois", EcmaValue.Object(new NativeFunctionInstance(1, State, Whois)));
+            this.energy.CreateVariable("sleep", EcmaValue.Object(new NativeFunctionInstance(1, State, Sleep)));
             
-            return new NullValue();
+            MysqlScript.Init(energy);
+
+            energy.RunCode(new StreamReader(File.OpenRead("script.js")));
         }
 
-        private Value Channel(Value[] args)
+        public EcmaValue Sleep(EcmaHeadObject obj, EcmaValue[] args)
         {
-            IrcScriptMessage msg = this.EnsureScriptMessage(args[0]);
-            return new StringValue(IrcUntil.GetChannel(msg.message));
+            Thread.Sleep(args[0].ToInt32(this.energy.State));
+            return EcmaValue.Null();
         }
 
-        private Value Msg(Value[] args)
+        public EcmaValue Whois(EcmaHeadObject obj, EcmaValue[] whois)
         {
-            return new StringValue(this.EnsureScriptMessage(args[0]).message.ParamsTrailing);
+            this.connection.SendLine("WHOIS " + whois[0].ToString(this.energy.State));
+            this.connection.Flush();
+            return EcmaValue.Null();
         }
 
-        private Value Nick(Value[] args)
+        public EcmaValue Join(EcmaHeadObject obj, EcmaValue[] args)
         {
-            return new StringValue(this.EnsureScriptMessage(args[0]).message.Nick);
+            this.connection.SendLine("JOIN " + Reference.GetValue(args[0]).ToString(this.energy.State));
+            this.connection.Flush();
+            return EcmaValue.Null();
         }
 
-        private Value RawMessage(Value[] args)
+        public EcmaValue SendAction(EcmaHeadObject obj, EcmaValue[] args)
         {
-            return new StringValue(this.EnsureScriptMessage(args[0]).message.Raw);
+            this.connection.SendLine("PRIVMSG " + args[0].ToString(this.energy.State) + " :" + '\x001'.ToString() + "ACTION " + args[1].ToString(this.energy.State));
+            this.connection.Flush();
+            return EcmaValue.Null();
         }
 
-        private IrcScriptMessage EnsureScriptMessage(Value value)
+        private EcmaValue IsPM(EcmaHeadObject obj, EcmaValue[] args)
         {
-            value = ScriptUntil.GetValue(value);
-            if(!(value is IrcScriptMessage))
-            {
-                throw new ScriptRuntimeException("Cant convert " + value.Type() + " to irc message stream");
-            }
+            return EcmaValue.Boolean(args[0].ToString(this.energy.State).IndexOf("#") != 0);
+        }
 
-            return (IrcScriptMessage)value;
+        private EcmaValue _Action(EcmaHeadObject obj, EcmaValue[] args)
+        {
+            if (!this.connection.scriptAction.ContainsKey(args[0].ToString(this.energy.State)))
+                this.connection.scriptAction.Add(args[0].ToString(this.energy.State), args[1].ToObject(this.State));
+            return EcmaValue.Null();
+        }
+
+        private EcmaValue MyNick(EcmaHeadObject obj, EcmaValue[] args)
+        {
+            return EcmaValue.String(this.connection.GetNick());
+        }
+
+        private EcmaValue On(EcmaHeadObject obj, EcmaValue[] args)
+        {
+            if(!this.connection.scriptEvenets.ContainsKey(args[0].ToString(this.energy.State)))
+                this.connection.scriptEvenets.Add(args[0].ToString(this.energy.State), args[1].ToObject(this.energy.State));
+            return EcmaValue.Null();
+        }
+
+        private EcmaValue Privmsg(EcmaHeadObject obj, EcmaValue[] args)
+        {
+            this.connection.SendLine("PRIVMSG " + args[0].ToString(this.energy.State) + " :" + args[1].ToString(this.energy.State));
+            this.connection.Flush();
+            this.main.channel1.Write(this.connection.GetIdentify(), args[0].ToString(this.energy.State), this.connection.GetNick(), args[1].ToString(this.energy.State));
+
+            return EcmaValue.Null();
         }
     }
 }

@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent(Form1 main)
         {
-            this.channelButton1 = new Forms.ChannelButton();
+            this.channelButton1 = new Forms.ChannelButton(main);
             this.message1 = new Forms.Message();
-            this.UserList = new Forms.UserList(main, this);
+            this.UserList = new Forms.UserList(this.channelButton1, main);
             this.SuspendLayout();
             // 
             // channelButton1

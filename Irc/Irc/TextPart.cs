@@ -35,24 +35,18 @@ namespace Irc.Irc
             return tp;
         }
 
-        internal int[] CalculateLine(int nw, Graphics g)
+        internal int[] CalculateLine(Graphics g)
         {
             int[] lines = new int[] { 0, 1 };
             if(this.Last != null)
             {
-                lines = this.Last.CalculateLine(nw, g);
+                lines = this.Last.CalculateLine(g);
             }
 
             SizeF size = new SizeF();
             for(int i = 0; i < this.Text.Length; i++)
             {
                 size = g.MeasureString(this.Text[i].ToString(), this.Font);
-                if(lines[0] + size.Width > nw)
-                {
-                    lines[0] = 0;
-                    lines[1]++;
-                }
-
                 lines[0] += (int)size.Width;
             }
 
@@ -60,23 +54,18 @@ namespace Irc.Irc
             return lines;
         }
 
-        public float Draw(Graphics g, TextSize size, int width)
+        public float Draw(Graphics g, TextSize size)
         {
             float x = 0;
 
             if(this.Last != null)
             {
-                x = this.Last.Draw(g, size, width);
+                x = this.Last.Draw(g, size);
             }
             SizeF s = new SizeF();
             for(int i = 0; i < this.Text.Length; i++)
             {
                 s = g.MeasureString(this.Text[i].ToString(), this.Font);
-                if(x + s.Width > width)
-                {
-                    x = 0;
-                    size.NextLine();
-                }
                 g.FillRectangle(new SolidBrush(this.Background), x, size.GetY(), s.Width, s.Height);
                 g.DrawString(this.Text[i].ToString(), this.Font, new SolidBrush(this.Color), x, size.GetY());
                 x += s.Width-2;

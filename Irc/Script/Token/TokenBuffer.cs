@@ -1,51 +1,69 @@
-﻿using System;
-using torrent.Script.Error;
+﻿using Irc.Script.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace torrent.Script.Token
+namespace Irc.Script.Token
 {
     public class TokenBuffer
     {
-        private string type;
-        private string context;
+        public TokenType Type { get; private set; }
+        public string Context { get; private set; }
+        public int LineStart { get; private set; }
 
-        public TokenBuffer(string type, string context)
+        public TokenBuffer(TokenType type, string context, int lineStart)
         {
-            this.type    = type;
-            this.context = context;
+            this.Type = type;
+            this.Context = context;
+            this.LineStart = lineStart;
         }
 
-        public bool Is(string type)
+        public bool Is(TokenType type, string[] tests)
         {
-            return this.type == type;
+            if (this.Type != type)
+                return false;
+
+            for(int i = 0; i < tests.Length; i++)
+            {
+                if (this.Context == tests[i])
+                    return true;
+            }
+
+            return false;
         }
 
-        public bool Is(string type, string context)
+        public bool Is(TokenType type, string context)
         {
-            return this.type == type && this.context == context;
+            return this.Type == type && this.Context == context;
         }
 
-        public string Context()
+        public bool Is(TokenType type)
         {
-            return this.context;
+            return this.Type == type;
         }
 
-        public string Type()
+        public bool IsNot(TokenType type, string context)
         {
-            return this.type;
+            return !this.Is(type, context);
         }
 
-        internal TokenBuffer Expect(string type, string context)
+        public bool IsNot(TokenType type)
         {
-            if (type != this.type || this.context != context)
-                throw new ScriptParserException("Unexpected token detected " + this.context + "(" + this.type + "). Excpedted "+context+"("+type+")");
-            return this;
+            return !this.Is(type);
         }
 
-        internal TokenBuffer Expect(string type)
+        public void Excepect(TokenType type)
         {
-            if (type != this.type)
-                throw new ScriptParserException("Unexpected token detected " + this.context + "(" + this.type + ")");
-            return this;
+            if (!this.Is(type))
+                throw new EcmaRuntimeException("Unexpected " + this.Type.ToString() + " detected expected " + type.ToString());
+        }
+
+        public void Excepect(TokenType type, string context)
+        {
+            if (!this.Is(type, context))
+                throw new EcmaRuntimeException("Unexpected " + this.Type.ToString() + "(" + this.Context + ") expected " + type.ToString() + "(" + context + ") on line: "+this.LineStart);
         }
     }
 }

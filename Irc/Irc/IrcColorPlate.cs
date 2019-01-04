@@ -6,6 +6,10 @@ namespace Irc.Irc
 {
     internal class IrcColorPlate
     {
+        public const int White = 0;
+        public const int Black = 1;
+        public const int Red = 4;
+        
         internal static Color GetColor(string v)
         {
             switch (v)

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Irc.Script;
+using Irc.Script.Types;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,11 +14,13 @@ namespace Irc.Forms
 {
     public partial class NewServer : Form
     {
-        private Form1 main;
+        private EcmaHeadObject main;
+        private EcmaState state;
 
-        public NewServer(Form1 main)
+        public NewServer(EcmaHeadObject main, EcmaState state)
         {
             this.main = main;
+            this.state = state;
             InitializeComponent();
         }
 
@@ -32,6 +36,10 @@ namespace Irc.Forms
             string Sport = textBox3.Text.Trim();
             string nick = textBox4.Text.Trim();
             string[] channels = richTextBox1.Text.Trim().Split(',');
+            //ensure no withespace
+            for (int i = 0; i < channels.Length; i++)
+                channels[i] = channels[i].Trim();
+
             int port;
 
             if (name.Length == 0 || server.Length == 0 || Sport.Length == 0 || !int.TryParse(Sport, out port) || nick.Length == 0 || channels.Length == 0)
@@ -40,7 +48,16 @@ namespace Irc.Forms
             }
             else
             {
-                this.main.SaveServer(name, server, port, nick, channels);
+                if (this.main is ICallable)
+                {
+                    (this.main as ICallable).Call(this.main, new EcmaValue[]{
+                        EcmaValue.String(name),
+                        EcmaValue.String(server),
+                        EcmaValue.Number(port),
+                        EcmaValue.String(nick),
+                        EcmaValue.Object(EcmaUntil.ToArray(this.state, new List<object>(channels)))
+                    });
+                }
                 this.Close();
             }
         }

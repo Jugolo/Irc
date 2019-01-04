@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MySql.Data">
+      <HintPath>..\v4.5.2\MySql.Data.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite">
@@ -49,8 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectionStatus.cs" />
-    <Compile Include="Database\Config.cs" />
-    <Compile Include="Database\Servers.cs" />
+    <Compile Include="DefaultScript.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -62,6 +64,9 @@
     </Compile>
     <Compile Include="Forms\Channel.Designer.cs">
       <DependentUpon>Channel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\InvokeSafeRichTextBox.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Forms\Message.cs">
       <SubType>UserControl</SubType>
@@ -88,61 +93,77 @@
       <DependentUpon>UserList.cs</DependentUpon>
     </Compile>
     <Compile Include="Irc\IrcColorPlate.cs" />
-    <Compile Include="Irc\ChannelInfo.cs" />
     <Compile Include="Irc\IrcChannel.cs" />
+    <Compile Include="Irc\IrcScriptWhoIs.cs" />
+    <Compile Include="Irc\IrcServer.cs" />
+    <Compile Include="Irc\IrcServerInfo.cs" />
     <Compile Include="Irc\IrcUntil.cs" />
     <Compile Include="Irc\IrcMessage.cs" />
     <Compile Include="Irc\IrcConection.cs" />
     <Compile Include="Irc\IrcScript.cs" />
     <Compile Include="Irc\IrcScriptMessage.cs" />
-    <Compile Include="Irc\MessageParts.cs" />
+    <Compile Include="Irc\IS\ChannelsGiven.cs" />
+    <Compile Include="Irc\IS\MysqlReaderValue.cs" />
+    <Compile Include="Irc\IS\MysqlScript.cs" />
+    <Compile Include="Irc\IS\MysqlValue.cs" />
+    <Compile Include="Irc\IS\NickGiven.cs" />
+    <Compile Include="Irc\IS\ScriptUserInfo.cs" />
+    <Compile Include="Irc\IS\ScriptWhoIsData.cs" />
+    <Compile Include="Irc\MessageData.cs" />
+    <Compile Include="Irc\MessagePart.cs" />
     <Compile Include="Irc\TextSize.cs" />
     <Compile Include="Irc\UserInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Script\Complication.cs" />
-    <Compile Include="Script\ComplicationType.cs" />
-    <Compile Include="Script\Energy.cs" />
-    <Compile Include="Script\EnergyState.cs" />
-    <Compile Include="Script\Error\ScriptException.cs" />
-    <Compile Include="Script\Error\ScriptParserException.cs" />
-    <Compile Include="Script\Error\ScriptRuntimeException.cs" />
-    <Compile Include="Script\Expresion.cs" />
-    <Compile Include="Script\ExpresionType.cs" />
-    <Compile Include="Script\FunctionInstance.cs" />
-    <Compile Include="Script\FunctionNativeInstance.cs" />
-    <Compile Include="Script\FunctionScriptInstance.cs" />
-    <Compile Include="Script\InputReader.cs" />
-    <Compile Include="Script\InputTextReader.cs" />
-    <Compile Include="Script\Libary\LibaryArray.cs" />
-    <Compile Include="Script\Libary\LibaryFile.cs" />
-    <Compile Include="Script\Libary\LibaryString.cs" />
-    <Compile Include="Script\Libary\LibaryType.cs" />
-    <Compile Include="Script\Libary\LibHash.cs" />
-    <Compile Include="Script\Libary\LibSystem.cs" />
-    <Compile Include="Script\Libary\ScriptLibary.cs" />
-    <Compile Include="Script\Refrences\ArrayRefrence.cs" />
-    <Compile Include="Script\Refrences\NamedArrayRefrence.cs" />
-    <Compile Include="Script\Refrences\Refrence.cs" />
-    <Compile Include="Script\Refrences\VariabelRefrence.cs" />
-    <Compile Include="Script\ScriptUntil.cs" />
-    <Compile Include="Script\Stack\VariabelDatabaseValue.cs" />
-    <Compile Include="Script\Stack\VariabelStack.cs" />
-    <Compile Include="Script\Statment.cs" />
-    <Compile Include="Script\StatmentType.cs" />
-    <Compile Include="Script\Token\TokenBuffer.cs" />
-    <Compile Include="Script\Token\Tokenizer.cs" />
-    <Compile Include="Script\Values\ArrayValue.cs" />
-    <Compile Include="Script\Values\BoolValue.cs" />
-    <Compile Include="Script\Values\FunctionValue.cs" />
-    <Compile Include="Script\Values\NamedArrayValue.cs" />
-    <Compile Include="Script\Values\NullValue.cs" />
-    <Compile Include="Script\Values\NumberValue.cs" />
-    <Compile Include="Script\Values\RefrenceValue.cs" />
-    <Compile Include="Script\Values\StringValue.cs" />
-    <Compile Include="Script\Values\Value.cs" />
-    <Compile Include="Script\VariabelDatabase.cs" />
     <Compile Include="Irc\TextPart.cs" />
+    <Compile Include="Irc\WhoIsData.cs" />
+    <Compile Include="Script\EcmaComplication.cs" />
+    <Compile Include="Script\EcmaComplicationType.cs" />
+    <Compile Include="Script\EcmaContext.cs" />
+    <Compile Include="Script\EcmaEquel.cs" />
+    <Compile Include="Script\EcmaEvulator.cs" />
+    <Compile Include="Script\EcmaGramma.cs" />
+    <Compile Include="Script\EcmaMath.cs" />
+    <Compile Include="Script\EcmaProperty.cs" />
+    <Compile Include="Script\EcmaRelational.cs" />
+    <Compile Include="Script\EcmaScript.cs" />
+    <Compile Include="Script\EcmaState.cs" />
+    <Compile Include="Script\EcmaStatment.cs" />
+    <Compile Include="Script\EcmaStatmentType.cs" />
+    <Compile Include="Script\EcmaUntil.cs" />
+    <Compile Include="Script\EcmaValue.cs" />
+    <Compile Include="Script\Exceptions\EcmaRuntimeException.cs" />
+    <Compile Include="Script\ExpresionData.cs" />
+    <Compile Include="Script\ExpresionType.cs" />
+    <Compile Include="Script\ICallable.cs" />
+    <Compile Include="Script\IConstruct.cs" />
+    <Compile Include="Script\Reference.cs" />
+    <Compile Include="Script\Token\EcmaChar.cs" />
+    <Compile Include="Script\Token\EcmaReader.cs" />
+    <Compile Include="Script\Token\EcmaTokenizer.cs" />
+    <Compile Include="Script\Token\TokenBuffer.cs" />
+    <Compile Include="Script\Token\TokenType.cs" />
+    <Compile Include="Script\Types\Array\ArrayConstructor.cs" />
+    <Compile Include="Script\Types\Array\ArrayIntstance.cs" />
+    <Compile Include="Script\Types\Array\ArrayPrototype.cs" />
+    <Compile Include="Script\Types\Date\DateConstructor.cs" />
+    <Compile Include="Script\Types\Date\DateFunc.cs" />
+    <Compile Include="Script\Types\Date\DateInstance.cs" />
+    <Compile Include="Script\Types\Date\DatePrototype.cs" />
+    <Compile Include="Script\Types\EcmaHeadObject.cs" />
+    <Compile Include="Script\Types\EcmaValueType.cs" />
+    <Compile Include="Script\Types\Function\FunctionConstructor.cs" />
+    <Compile Include="Script\Types\Function\FunctionInstance.cs" />
+    <Compile Include="Script\Types\Function\FunctionPrototype.cs" />
+    <Compile Include="Script\Types\Function\FunctionStringInstance.cs" />
+    <Compile Include="Script\Types\Function\NativeFunctionInstance.cs" />
+    <Compile Include="Script\Types\GlobalObject.cs" />
+    <Compile Include="Script\Types\Object\ObjectConstructor.cs" />
+    <Compile Include="Script\Types\Object\ObjectInstance.cs" />
+    <Compile Include="Script\Types\Object\ObjectPrototype.cs" />
+    <Compile Include="Script\Types\String\StringConstructor.cs" />
+    <Compile Include="Script\Types\String\StringInstance.cs" />
+    <Compile Include="Script\Types\String\StringPrototype.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

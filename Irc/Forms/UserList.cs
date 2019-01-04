@@ -1,191 +1,115 @@
-﻿using System;
+﻿using Irc.Irc;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Irc.Irc;
 
 namespace Irc.Forms
 {
     public partial class UserList : UserControl
     {
-
-        private Dictionary<string, Dictionary<string, List<UserInfo>>> user = new Dictionary<string, Dictionary<string, List<UserInfo>>>();
-        private List<UserInfo> Current;
+        private ChannelButton Input;
+        private delegate void Dummy();
+        private List<UserInfo> CurrentUsers = new List<UserInfo>();
         private Form1 Main;
-        private Channel Channel;
-        private delegate void RP();
-        private delegate void D(bool value);
 
-        public UserList(Form1 main, Channel channel)
+        public UserList(ChannelButton input, Form1 Main)
         {
-            Main = main;
-            Channel = channel;
             InitializeComponent();
+            this.Input = input;
+            this.Main = Main;
         }
 
-        public void AppendUser(string identify, string channel, UserInfo info)
+        public void Empty()
         {
-            if (!user.ContainsKey(identify))
-                user.Add(identify, new Dictionary<string, List<UserInfo>>());
-
-            if (!user[identify].ContainsKey(channel))
-                user[identify].Add(channel, new List<UserInfo>());
-
-            user[identify][channel].Add(info);
-            this.RePaint();
+            this.listBox1.BeginInvoke(new Dummy(() => {
+                this.listBox1.Items.Clear();
+            }));
+            this.CurrentUsers = new List<UserInfo>();
         }
 
-        public bool RemoveUser(string identify, string channel, string nick)
+        public void AppendUsers(List<UserInfo> info)
         {
-            if(user.ContainsKey(identify) && user[identify].ContainsKey(channel))
+            this.listBox1.BeginInvoke(new Dummy(() =>
             {
-                List<UserInfo> info = user[identify][channel];
-                for(int i = 0; i < info.Count; i++)
+                this.listBox1.BeginUpdate();
+                for (int i = 0; i < info.Count; i++)
                 {
-                    if(info[i].Nick == nick)
-                    {
-                        info.Remove(info[i]);
-                        return true;
-                    }
+                    this.listBox1.Items.Add(GetPrefix(info[i]) + info[i].Nick);
                 }
-            }
-            return false;
+                this.listBox1.EndUpdate();
+            }));
+            this.CurrentUsers.AddRange(info);
         }
 
-        public string[] UpdateNick(string identify, string oldnick, string newnick)
+        private string GetPrefix(UserInfo info)
         {
-            List<string> array = new List<string>();
-            if (user.ContainsKey(identify))
-            {
-                Dictionary<string, List<UserInfo>> channels = this.user[identify];
-                foreach(string channel in channels.Keys)
-                {
-
-                }
-            }
-            return array.ToArray();
+            if (info.Op)
+                return "@";
+            if (info.Voice)
+                return "+";
+            return "";
         }
 
-        public void RemoveChannel(string identify, string channel)
+        private void listBox1_DrawItem(object sender, DrawItemEventArgs e)
         {
-            if(this.user.ContainsKey(identify) && this.user.ContainsKey(channel))
-            {
-                if (this.Current == this.user[identify][channel])
-                    this.Current = null;
-                this.user[identify].Remove(channel);
-                this.RePaint();
-            }
-        }
+            e.DrawBackground();
+            Brush color = Brushes.Black;
 
-        public void RemoveServer(string identify)
-        {
-            if (this.user.ContainsKey(identify))
-            {
-                this.user.Remove(identify);
-            }
-        }
-
-        public void Select(string identify, string channel)
-        {
-            bool d = channel.IndexOf("#") == 0;
-            this.Display(d);
-
-            if (!d)
-                return;
-
-            if(this.user.ContainsKey(identify) && this.user[identify].ContainsKey(channel))
-            {
-                this.Current = this.user[identify][channel];
-            }
-            else
-            {
-                this.Current = null;
-            }
-
-            this.RePaint();
-        }
-
-        private void UserList_Paint(object sender, PaintEventArgs e)
-        {
-            if (this.Current == null)
-                return;
-
-            Graphics g = e.Graphics;
-            for(int i = 0; i < Current.Count; i++)
-            {
-                Color color = Color.Black;
-                string prefix = "";
-                if (Current[i].Op)
-                {
-                    prefix = "@";
-                    color = Color.Red;
-                }else if (Current[i].Voice)
-                {
-                    prefix = "+";
-                    color = Color.Blue;
-                }
-                g.DrawString(prefix+Current[i].Nick, new Font("Arial", 8), new SolidBrush(color), 5, i*10);
-            }
-        }
-
-        private void RePaint()
-        {
-            this.BeginInvoke(new RP(DoRePaint), new object[0]);
-        }
-
-        private void DoRePaint()
-        {
-            this.Refresh();
-        }
-
-        private void Display(bool value)
-        {
-            this.BeginInvoke(new D(HandleDisplay), new object[] { value });
-        }
-
-        private void HandleDisplay(bool value)
-        {
-            if (!value)
-                this.Hide();
-            else
-                this.Show();
-        }
-
-        private void UserList_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right)
-            {
-                int line = e.Y / 10;
-                if (line >= 0 && line < Current.Count)
-                {
-                    contextMenuStrip1.Items.Clear();
-                    contextMenuStrip1.Items.Add(Current[line].Nick).Enabled = false;
-                    contextMenuStrip1.Items.Add("Query").Click += QueryUserClick;
-                    contextMenuStrip1.Items.Add("Slap").Click += SlqpUserClick;
-                    contextMenuStrip1.Show(this, e.X, e.Y);
-                }
-                else
-                    MessageBox.Show("Line: "+line);
-            }
-        }
-
-        private void SlqpUserClick(object sender, EventArgs e)
-        {
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
-            int line = (item.Owner.Location.Y / 10) - 8;
+            string context = this.listBox1.Items[e.Index].ToString();
+            char prefix = context.ToCharArray()[0];
+            if (prefix == '@')
+                color = Brushes.Red;
+            if (prefix == '+')
+                color = Brushes.Blue;
             
+            e.Graphics.DrawString(context, e.Font, color, e.Bounds, StringFormat.GenericDefault);
+
+            e.DrawFocusRectangle();
         }
 
-        private void QueryUserClick(object sender, EventArgs e)
+        private void listBox1_MeasureItem(object sender, MeasureItemEventArgs e)
         {
-            ToolStripMenuItem item = (ToolStripMenuItem)sender;
-            int line = (item.Owner.Location.Y / 10) - 8;
-            this.Main.AppendChannel(this.Channel.SelectedIdentify(), Current[line].Nick);
+            e.ItemHeight = this.listBox1.Font.Height;
+        }
+
+        private void listBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if(e.Button == MouseButtons.Right)
+            {
+                this.contextMenuStrip1.Items.Clear();
+                int index = this.listBox1.IndexFromPoint(e.Location);
+                if (index != ListBox.NoMatches)
+                {
+                    string nick = this.GetUser(this.listBox1.Items[index].ToString());
+                    this.contextMenuStrip1.Items.Add(nick).Enabled = false;
+                    this.contextMenuStrip1.Items.Add("Query").Click += (s, a) =>
+                    {
+                        this.Main.AppendChannel(
+                            this.Main.GetIdentify,
+                            nick
+                            );
+                    };
+                    this.contextMenuStrip1.Items.Add("Slap").Click += (s, a) =>
+                    {
+                        this.Input.Write("/me slap " + nick + " just becuse i can");
+                        this.Input.Send();
+                    };
+                    this.contextMenuStrip1.Show();
+                }
+            }
+        }
+
+        private void UserList_Click(object sender, System.EventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        private string GetUser(string name)
+        {
+            if (name[0] == '@' || name[0] == '+')
+                name = name.Substring(1);
+
+            return name;
         }
     }
 }
