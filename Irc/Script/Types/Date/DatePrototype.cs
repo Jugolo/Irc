@@ -59,7 +59,7 @@ namespace Irc.Script.Types.Date
             {
                 double month = self.Value.ToInteger(state);
                 if (Double.IsNaN(month))
-                    return EcmaValue.Number(Double.NaN);
+                    return EcmaValue.Number(double.NaN);
                 return EcmaValue.Number(DateFunc.MonthFromTime(month));
             })));
             this.Put("getDate", EcmaValue.Object(new NativeFunctionInstance(0, state, (self, arg) => {
